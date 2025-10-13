@@ -1,0 +1,20 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "3c68f82e-901f-404a-869f-4b45aa33f8e4")
+	(paper "A4")
+	(title_block
+		(title "Aquarium air pump controller")
+		(date "2025-10-13")
+		(rev "0.1")
+		(company "Tinta T.")
+	)
+	(lib_symbols)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

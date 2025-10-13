@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "AP30N03DF")(type "KiCad")(uri "${KIPRJMOD}/AP30N03DF.kicad_sym")(options "")(descr ""))
+  (lib (name "Motor_conn")(type "KiCad")(uri "${KIPRJMOD}/Motor_conn.kicad_sym")(options "")(descr ""))
+)
