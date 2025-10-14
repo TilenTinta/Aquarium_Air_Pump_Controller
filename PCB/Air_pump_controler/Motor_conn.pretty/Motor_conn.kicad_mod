@@ -56,7 +56,7 @@
 	(attr through_hole)
 	(pad "1" thru_hole oval
 		(at 18.5 0)
-		(size 3 1.5)
+		(size 3.5 2)
 		(drill oval 2.5 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
@@ -64,7 +64,7 @@
 	)
 	(pad "2" thru_hole oval
 		(at 0 0)
-		(size 3 1.5)
+		(size 3.5 2)
 		(drill oval 2.5 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)

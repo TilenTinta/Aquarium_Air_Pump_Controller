@@ -1,4 +1,4 @@
-25210717559206952
+25212477947418661
 AP30N03DF
 AP30N03DF
 
@@ -67017,6 +67017,13 @@ module pcb
 0
 7
 7
+Motor_conn
+Motor_conn
+Through hole straight pin header, 1x02, 2.54mm pitch, single row
+Through hole pin header THT 1x02 2.54mm single row
+0
+2
+2
 Motors
 Vybronics_VZ30C1T8219732L
 Vibration motor, 2.3-3.2V, 14000rpm, 0.7G, https://www.vybronics.com/wp-content/uploads/datasheet-files/Vybronics-VZ30C1T8219732L-datasheet.pdf
