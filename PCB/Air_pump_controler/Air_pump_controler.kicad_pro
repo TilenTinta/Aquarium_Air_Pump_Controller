@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.8,
-          "height": 1.27,
-          "width": 2.54
+          "drill": 2.5,
+          "height": 2.1,
+          "width": 3.6
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -58,7 +58,36 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "copper_edge_clearance|147400000|89300000|86228f0b-fc52-4e71-badd-a71a501ba4f2|600bc689-b940-42d7-9ced-4672c8727063",
+          ""
+        ],
+        [
+          "copper_edge_clearance|165900000|88800000|4f36026d-f664-4d09-9ddc-81cdeb6d488b|c3bbdcef-a03d-4aa4-86d3-a7acbb4ff5e4",
+          ""
+        ],
+        [
+          "lib_footprint_mismatch|149300000|84450000|c9ad73b8-9200-4a32-8242-1b0eac140e8d|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
+          "lib_footprint_mismatch|156950000|97425000|872d54c2-1f09-4e72-b1ec-92545e10652f|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
+          "lib_footprint_mismatch|157400000|89300000|0c98f9de-6035-488d-8565-3eaec5afe0a2|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
+          "starved_thermal|158650000|83800000|8fe689d6-f706-4a8a-9ca2-2aaf769861a4|918ad1d1-584b-4c01-b356-74e586b451b4|F.Cu",
+          ""
+        ],
+        [
+          "starved_thermal|161900000|94500000|8fe689d6-f706-4a8a-9ca2-2aaf769861a4|29058698-6448-496d-92b5-6ffaf9f05249|F.Cu",
+          ""
+        ]
+      ],
       "meta": {
         "version": 2
       },
@@ -507,7 +536,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "GERBERS/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
