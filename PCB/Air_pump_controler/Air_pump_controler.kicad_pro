@@ -539,7 +539,7 @@
       "plot": "GERBERS/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../3D_Model/Air_pump_controler.step",
       "svg": "",
       "vrml": ""
     },
