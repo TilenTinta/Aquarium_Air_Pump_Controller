@@ -1,6 +1,6 @@
 # Aquarium_Air_Pump_Controller
 
-**Short description:** Simple electronics for controlling aquarium air pump speed with some additional functions built around the WCH **CH32V003F4U6** MCU
+Simple electronics for controlling aquarium air pump speed with some additional functions built around the WCH **CH32V003F4U6** MCU
 
 ![Pump control](https://github.com/TilenTinta/Aquarium_Air_Pump_Controller/blob/main/Images/PCB_3D.png)  
 
