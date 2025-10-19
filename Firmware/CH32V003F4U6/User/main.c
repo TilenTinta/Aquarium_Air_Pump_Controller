@@ -23,7 +23,6 @@ void ControlPinout_Init(void);
 void TIM_INT_Init(void);
 void UartSendBuffer(uint8_t* buffer, uint16_t length);
 void UART_buffer_clear(void);
-uint16_t ADC_ReadChannel(uint8_t channel);
 void PWM1_Init(uint16_t arr, uint16_t psc, uint16_t pulse);
 void PWM1_SetDuty(uint16_t pulse);
 
@@ -50,7 +49,7 @@ int main(void)
     sDevice.bootDone = 0;                                   // Enable boot routine
     sDevice.flag_adc_read = 0;                              // Turn off ADC read
     sDevice.state = devBoot;                                // Set state of main state machine
-    sDevice.analog_state = readVoltage;                     // Set state of analog state machine
+    sDevice.analog_state = ADCread;                         // Set state of analog state machine
 
     while(1)
     {
@@ -74,26 +73,54 @@ int main(void)
                 /* ANALOG STATE MACHINE */
                 switch (sDevice.analog_state)
                 {
-                // State: Read input voltage
-                case readVoltage:
-                    sAnalog.analogVoltage = ADC_ReadChannel(ADC_CH_V_IN);
-                    break;
+                // State: Read analog values
+                case ADCread:
 
-                // State: Read temperature
-                case readTemperature:
-                    sAnalog.analogTemperature = ADC_ReadChannel(ADC_CH_TEMP);
-                    break;
+                    // Read new ADC values and wait on DMA
+                    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+                    while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET);
+                    DMA_ClearFlag(DMA1_FLAG_TC1);
 
-                // State: Read potenciometer for duty cycle adjustment
-                case readPotenciometer:
-                    sAnalog.analogPotenciometer = ADC_ReadChannel(ADC_CH_POT);
+                    sAnalog.analogVoltage = sAnalog.adcResults[0];
+                    sAnalog.analogTemperature = sAnalog.adcResults[1];
+                    sAnalog.analogPotenciometer = sAnalog.adcResults[2];
+
+                    // Calculate raw values to messurements
+                    // - Input voltage
+                    sAnalog.voltage = ((float)sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
+
+                    // - PCB temperature
+                    sAnalog.analogTemperature = ((float)sAnalog.analogTemperature / (1024 - 1)) * sAnalog.voltage;
+                    
+                    uint16_t NTCval = TEMP_R * (sAnalog.voltage / sAnalog.temperature - 1);
+                    float logVal = (float)NTCval / (float)TEMP_R0;
+                    float temp_K = 1.0f / ((1.0f / TEMP_T_0) + (1.0f / TEMP_BETA) * logf(logVal));
+                    sAnalog.temperature = temp_K - 273.15; // K to C
+
+                    // - Duty cycle
+                    //TODO: calculate % 
+                    //sAnalog.analogPotenciometer
+                    uint8_t potPercent = 0;
+                    
+                    for (int i = 0; i < 9; i++)
+                    {
+                        sAnalog.potValues[i] = sAnalog.potValues[i + 1];
+                    }
+                    sAnalog.potValues[0] = potPercent;
+
                     break;
 
                 // State: Compute values
                 case compute:
-                    // TODO: Add your computation and error
                     
-
+                    // Undervoltage -> error
+                    if (sAnalog.voltage < UNDER_VOLT)
+                    {
+                        sDevice.state = error;
+                        break;
+                    }
+                    
+                    // TODO: Add your computation and error
 
                     PWM1_SetDuty(sDevice.duty);     // Set PWM duty cycle
                     break;
@@ -111,19 +138,20 @@ int main(void)
                 /* ANALOG STATE MACHINE */
                 switch (sDevice.analog_state)
                 {
-                // State: Read input voltage
-                case readVoltage:
-                    sAnalog.analogVoltage = ADC_ReadChannel(ADC_CH_V_IN);
-                    break;
+                // State: Read analog values
+                case ADCread:
+                    
+                    // Read new ADC values and wait on DMA
+                    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+                    while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET);
+                    DMA_ClearFlag(DMA1_FLAG_TC1);
 
-                // State: Read temperature
-                case readTemperature:
-                    sAnalog.analogTemperature = ADC_ReadChannel(ADC_CH_TEMP);
-                    break;
+                    sAnalog.analogVoltage = sAnalog.adcResults[0];
+                    sAnalog.analogTemperature = sAnalog.adcResults[1];
+                    sAnalog.analogPotenciometer = sAnalog.adcResults[2];
 
-                // State: Read potenciometer for duty cycle adjustment
-                case readPotenciometer:
-                    sAnalog.analogPotenciometer = ADC_ReadChannel(ADC_CH_POT);
+                    sAnalog.voltage = (uint8_t)((sAnalog.analogVoltage / 1024) * BASE_VOLTAGE * 10);
+
                     break;
 
                 // State: Compute values
@@ -161,10 +189,12 @@ int main(void)
  */
 void ControlPinout_Init(void)
 {
-     ADC_InitTypeDef ADC_InitStructure = {0};
-    GPIO_InitTypeDef  GPIO_InitStructure = {0};
+    ADC_InitTypeDef     ADC_InitStructure = {0};
+    GPIO_InitTypeDef    GPIO_InitStructure = {0};
+    DMA_InitTypeDef     DMA_InitStruct  = {0};
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD | RCC_APB2Periph_AFIO | RCC_APB2Periph_ADC1, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
 
     // Set RED LED
     GPIO_InitStructure.GPIO_Pin = LED_RED;
@@ -181,40 +211,47 @@ void ControlPinout_Init(void)
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
     ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-    ADC_InitStructure.ADC_NbrOfChannel = 1;
+    ADC_InitStructure.ADC_NbrOfChannel = 3;
     ADC_Init(ADC1, &ADC_InitStructure);
 
-    /* Enable ADC */
+    // Configure channel rank
+    ADC_RegularChannelConfig(ADC1, ADC_CH_V_IN,  1, ADC_SampleTime_241Cycles);
+    ADC_RegularChannelConfig(ADC1, ADC_CH_TEMP, 2, ADC_SampleTime_241Cycles);
+    ADC_RegularChannelConfig(ADC1, ADC_CH_POT,  3, ADC_SampleTime_241Cycles);
+
+    // DMA configuration
+    DMA_DeInit(DMA1_Channel1);                                      // ADC1
+    DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->RDATAR;
+    DMA_InitStruct.DMA_MemoryBaseAddr     = (uint32_t)sAnalog.adcResults;
+    DMA_InitStruct.DMA_DIR                = DMA_DIR_PeripheralSRC;  // peripheral ¡ú memory
+    DMA_InitStruct.DMA_BufferSize         = 3;
+    DMA_InitStruct.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
+    DMA_InitStruct.DMA_MemoryInc          = DMA_MemoryInc_Enable;
+    DMA_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;  // 16-bit
+    DMA_InitStruct.DMA_MemoryDataSize     = DMA_MemoryDataSize_HalfWord;
+    DMA_InitStruct.DMA_Mode               = DMA_Mode_Circular;          
+    DMA_InitStruct.DMA_Priority           = DMA_Priority_High;
+    DMA_InitStruct.DMA_M2M                = DMA_M2M_Disable;
+    DMA_Init(DMA1_Channel1, &DMA_InitStruct);
+
+    DMA_Cmd(DMA1_Channel1, ENABLE);
+
+    // 6. Enable ADC DMA
+    ADC_DMACmd(ADC1, ENABLE);
+
+    // Enable ADC
     ADC_Cmd(ADC1, ENABLE);
 
-    /* Calibrate ADC */
+    // Calibrate ADC
     ADC_ResetCalibration(ADC1);
     while(ADC_GetResetCalibrationStatus(ADC1));
     ADC_StartCalibration(ADC1);
     while(ADC_GetCalibrationStatus(ADC1));
 
-}
-
-
-
-/*********************************************************************
- * @fcn     ADC_ReadChannel
- *
- * @brief   Reads one ADC channel and returns 12-bit value
- *
- * @param   channel - ADC channel number (e.g. ADC_Channel_1)
- * @return  12-bit ADC result
- *********************************************************************/
-uint16_t ADC_ReadChannel(uint8_t channel)
-{
-    ADC_RegularChannelConfig(ADC1, channel, 1, ADC_SampleTime_241Cycles);
-    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
-    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
-    return ADC_GetConversionValue(ADC1);
 }
 
 
@@ -423,7 +460,7 @@ void TIM2_IRQHandler(void)
             sDevice.analog_state++;                                 // Change state/channel of ADC
             sDevice.flag_adc_read = 1;                              // Trigger ADC reading
 
-            if (sDevice.analog_state > 3)                           // Reset state/channel of ADC  
+            if (sDevice.analog_state > 1)                           // Reset state/channel of ADC  
             {
                 sDevice.analog_state = 0;
 
