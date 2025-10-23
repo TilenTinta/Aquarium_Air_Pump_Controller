@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
 
 /*###########################################################################################################################################################*/
 /* Defines */
@@ -31,10 +30,10 @@
 #define V_IN_R1             10000       // Voltage divider (input voltage) R1 
 #define V_IN_R2             100000      // Voltage divider (input voltage) R2 
 #define DUTY_POT            20000       // Potenciometer (duty cycle)
-#define TEMP_BETA           3950.0f     // Voltage divider (temperature) NTC Beta value
-#define TEMP_R0             10000.0f    // R_0 value of NTC
-#define TEMP_R              10000.0f    // Voltage divider (temperature) R2 
-#define TEMP_T_0            298.15f     // T_0 - reference temperature 25C / 298.15K
+#define TEMP_BETA           39500       // Voltage divider (temperature) NTC Beta value
+#define TEMP_R0             10000       // R_0 value of NTC
+#define TEMP_R              10000       // Voltage divider (temperature) R2 
+#define TEMP_T_0            29815       // T_0 - reference temperature 25C / 298.15K
 
 // Pinout
 #define LED_RED             GPIO_Pin_3  // PC3: Pin of red LED
@@ -66,10 +65,10 @@ typedef struct {
     uint16_t    analogVoltage;          // Raw analog value of input voltage (10bit)
     uint16_t    analogTemperature;      // Raw analog value of temperature (10bit)
     uint16_t    analogPotenciometer;    // Raw analog value of potenciometer (10bit)
-    float       voltage;                // Current value of input voltage
-    float       temperature;            // Current value of temprature
-    float       potVal;                 // Current value of potenciometer
-    uint16_t    potValues[10];          // Array of measurements from potenciometers
+    uint16_t    voltage;                // Current value of input voltage
+    uint16_t    temperature;            // Current value of temprature
+    uint16_t    potVal;                 // Current value of potenciometer
+    uint16_t    potPercent[10];         // Array of measurements from potenciometers
 } S_ANALOG;
 
 

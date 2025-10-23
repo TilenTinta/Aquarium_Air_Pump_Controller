@@ -9,6 +9,12 @@
 /* Includes */
 #include "debug.h"
 #include "main.h"
+#include "math.h"
+
+/*###########################################################################################################################################################*/
+/* Global define */
+S_DEVICE sDevice;
+S_ANALOG sAnalog;
 
 
 /* Interrupts defines */
@@ -25,13 +31,16 @@ void UartSendBuffer(uint8_t* buffer, uint16_t length);
 void UART_buffer_clear(void);
 void PWM1_Init(uint16_t arr, uint16_t psc, uint16_t pulse);
 void PWM1_SetDuty(uint16_t pulse);
+int16_t calculate_ntc_temperature(S_ANALOG *values);
+uint16_t duty_to_timVal(uint8_t duty);
+
 
 /*###########################################################################################################################################################*/
-/* Global define */
-S_DEVICE sDevice;
-S_ANALOG sAnalog;
+/* Global variables */
 
 
+
+/*###########################################################################################################################################################*/
 
 int main(void)
 {
@@ -44,7 +53,7 @@ int main(void)
     USART1_Init();                                          // Init USART
     // 1 kHz PWM: prescaler = 48-1 = 47 >> timer clock = 1 MHz, ARR = 1000-1 = 999 = period = 1000 counts = 1 kHz
     PWM1_Init(999, 47, 0);                                  // 0% duty (pulse = 0)
-    // e.g.: PWM1_SetDuty(250);                                   // 5% duty
+    // e.g.: PWM1_SetDuty(250);                             // 25% duty
 
     sDevice.bootDone = 0;                                   // Enable boot routine
     sDevice.flag_adc_read = 0;                              // Turn off ADC read
@@ -85,44 +94,54 @@ int main(void)
                     sAnalog.analogTemperature = sAnalog.adcResults[1];
                     sAnalog.analogPotenciometer = sAnalog.adcResults[2];
 
-                    // Calculate raw values to messurements
-                    // - Input voltage
-                    sAnalog.voltage = ((float)sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
-
-                    // - PCB temperature
-                    sAnalog.analogTemperature = ((float)sAnalog.analogTemperature / (1024 - 1)) * sAnalog.voltage;
-                    
-                    uint16_t NTCval = TEMP_R * (sAnalog.voltage / sAnalog.temperature - 1);
-                    float logVal = (float)NTCval / (float)TEMP_R0;
-                    float temp_K = 1.0f / ((1.0f / TEMP_T_0) + (1.0f / TEMP_BETA) * logf(logVal));
-                    sAnalog.temperature = temp_K - 273.15; // K to C
-
-                    // - Duty cycle
-                    //TODO: calculate % 
-                    //sAnalog.analogPotenciometer
-                    uint8_t potPercent = 0;
-                    
-                    for (int i = 0; i < 9; i++)
-                    {
-                        sAnalog.potValues[i] = sAnalog.potValues[i + 1];
-                    }
-                    sAnalog.potValues[0] = potPercent;
-
                     break;
 
                 // State: Compute values
                 case compute:
-                    
+
+                    // Calculate raw values to messurements and set outputs
+                    // --- Input voltage ---
+                    sAnalog.voltage = (uint16_t)(sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
+
                     // Undervoltage -> error
                     if (sAnalog.voltage < UNDER_VOLT)
                     {
                         sDevice.state = error;
                         break;
                     }
-                    
-                    // TODO: Add your computation and error
 
-                    PWM1_SetDuty(sDevice.duty);     // Set PWM duty cycle
+                    // --- Temperature ---
+                    sAnalog.temperature = calculate_ntc_temperature(&sAnalog);
+
+                    // Overtemperature -> error
+                    if (sAnalog.temperature > OVER_TEMP)
+                    {
+                        sDevice.state = error;
+                        break;
+                    }
+
+                    // --- Duty cycle ---
+                    uint8_t percent = 0;
+                    uint16_t percentSum = 0;
+                    
+                    // Shift values
+                    for (int i = 0; i < 9; i++)
+                    {
+                        sAnalog.potPercent[i] = sAnalog.potPercent[i + 1];
+                    }
+                    sAnalog.potPercent[0] = (uint8_t)round(sAnalog.analogPotenciometer * 100) / 1024;
+
+                    // Average values
+                    for (int i = 0; i < 10; i++)
+                    {
+                        percentSum += sAnalog.potPercent[i];
+                    }
+
+                    percent = (uint8_t)round(percentSum / sizeof(percentSum));
+
+                    // Set PWM duty cycle
+                    PWM1_SetDuty(duty_to_timVal(percent));
+
                     break;
                 }
             }
@@ -134,13 +153,13 @@ int main(void)
             if (sDevice.flag_adc_read == 1)
             {
                 sDevice.flag_adc_read = 0;  // Clear flag
-
+                
                 /* ANALOG STATE MACHINE */
                 switch (sDevice.analog_state)
                 {
                 // State: Read analog values
                 case ADCread:
-                    
+
                     // Read new ADC values and wait on DMA
                     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
                     while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET);
@@ -150,16 +169,53 @@ int main(void)
                     sAnalog.analogTemperature = sAnalog.adcResults[1];
                     sAnalog.analogPotenciometer = sAnalog.adcResults[2];
 
-                    sAnalog.voltage = (uint8_t)((sAnalog.analogVoltage / 1024) * BASE_VOLTAGE * 10);
-
                     break;
 
                 // State: Compute values
                 case compute:
-                    // TODO: Add your computation and error
 
+                    // Calculate raw values to messurements and set outputs
+                    // --- Input voltage ---
+                    sAnalog.voltage = (uint16_t)(sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
 
-                    PWM1_SetDuty(sDevice.duty);     // Set PWM duty cycle
+                    // Undervoltage -> error
+                    if (sAnalog.voltage < UNDER_VOLT)
+                    {
+                        sDevice.state = error;
+                        break;
+                    }
+
+                    // --- Temperature ---
+                    sAnalog.temperature = calculate_ntc_temperature(&sAnalog);
+
+                    // Overtemperature -> error
+                    if (sAnalog.temperature > OVER_TEMP)
+                    {
+                        sDevice.state = error;
+                        break;
+                    }
+
+                    // --- Duty cycle ---
+                    uint8_t percent = 0;
+                    uint16_t percentSum = 0;
+                    
+                    // Shift values
+                    for (int i = 0; i < 9; i++)
+                    {
+                        sAnalog.potPercent[i] = sAnalog.potPercent[i + 1];
+                    }
+                    sAnalog.potPercent[0] = (uint8_t)round(sAnalog.analogPotenciometer * 100) / 1024;
+
+                    // Average values
+                    for (int i = 0; i < 10; i++)
+                    {
+                        percentSum += sAnalog.potPercent[i];
+                    }
+
+                    percent = (uint8_t)round(percentSum / sizeof(percentSum));
+
+                    // Set PWM duty cycle
+                    PWM1_SetDuty(duty_to_timVal(percent));
 
                     break;
                 }
@@ -356,12 +412,45 @@ void PWM1_Init(uint16_t arr, uint16_t psc, uint16_t pulse)
  * @fcn      PWM1_SetDuty
  *
  * @brief   Change duty (pulse width) for LS_SW channel
+ *          In tight corelation with timer frequency
  *
  * @param   pulse ！ new pulse value (0 .. arr)
  */
 void PWM1_SetDuty(uint16_t pulse)
 {
     TIM_SetCompare1(TIM1, pulse);
+}
+
+
+
+/*********************************************************************
+ * @fcn      duty_to_timVal
+ *
+ * @brief   Calculate PWM timer value from percent
+ *
+ * @param   timer value
+ */
+uint16_t duty_to_timVal(uint8_t duty)
+{
+    uint16_t currentFreq = 1000;
+
+    // Area of unvalid dutys
+    if (duty < MIN_DUTY && duty != 0)
+    {
+        duty = 0;
+    }
+    else if (duty > MAX_DUTY && duty != 100)
+    {
+        duty = 100;
+    }
+
+    // Calculate timer value
+    uint16_t value = (duty * currentFreq) / 100;
+
+    if (value >= 1000) value = 999;
+    if (value < 0) value = 0;
+
+    return value;
 }
 
 
@@ -492,3 +581,52 @@ void TIM2_IRQHandler(void)
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);   // Clear flag            
     }
 }
+
+
+
+/*********************************************************************
+ * @fn      calculate_ntc_temperature
+ *
+ * @brief   Simplified ADC to temp calculation
+ *
+ * @return  temperature
+ */
+int16_t calculate_ntc_temperature(S_ANALOG *values) {
+    
+    if (values->analogTemperature == 0) values->analogTemperature = 1; // Avoid division by zero
+    if (values->analogTemperature >= values->analogVoltage) return -100; // Invalid reading
+    
+    // NTC resistance: R_ntc = R * (1023/ADC - 1)
+    uint32_t r_ntc = (uint32_t)TEMP_R * (values->analogVoltage - values->analogTemperature) / values->analogTemperature;
+    
+    // Avoid extreme values
+    if (r_ntc < 100 || r_ntc > 1000000) return -100;
+    
+    // ln(R_ntc/R0) with integer approximation
+    int32_t ratio = ((int32_t)r_ntc - TEMP_R0) * 1000L / TEMP_R0;
+    
+    // ln approximation: ln(1+x) 「 x for small x
+    // For better accuracy over wider range, use: ln(x) 「 2*(x-1)/(x+1) when x 「 1
+    int32_t ln_val;
+    if (ratio > -500 && ratio < 500) {
+        ln_val = ratio; // Simple approximation
+    } else {
+        // Better approximation: ln(x) 「 2*(x-1)/(x+1) 
+        int32_t x_num = (int32_t)r_ntc * 1000L / TEMP_R0;
+        ln_val = (2000 * (x_num - 1000)) / (x_num + 1000);
+    }
+    
+    // Temperature in decikelvin: 1/T = 1/T0 + (1/B)*ln(R/R0)
+    int32_t inv_temp = (100000000L / TEMP_T_0) + (100000000L / TEMP_BETA) * ln_val / 1000;
+    
+    if (inv_temp == 0) return -100; 
+    
+    // Convert to Celsius: T = 1/inv_temp - 273.15
+    int32_t temp_k = 100000000L / inv_temp; 
+    int16_t temp_c = (temp_k - 27315) / 100;
+    
+    return temp_c;
+}
+
+
+
