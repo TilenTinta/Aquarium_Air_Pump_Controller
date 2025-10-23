@@ -40,7 +40,7 @@ This controller is a very compact solution for controling aquarium air pump spee
 ### Software
 
 - **Firmware:** C, developed in **MounRiver Studio IDE**. 
-- **Updates:** **Custom bootloader** supports USB firmware updates. 
+- **Updates:** **Custom bootloader** supports UART firmware updates. 
 
 ---
 
@@ -56,7 +56,7 @@ To mount controler on air pump you need to first remove silicon housing from the
 
 - Open the project in **MounRiver Studio IDE**, compile, and **upload** to the **CH32V003F4U6** MCU. 
 
-> The board also includes a **custom bootloader** for **USB firmware updates** when supported by the desktop toolchain. 
+> The board also includes a **custom bootloader** for **UART firmware updates** when supported by the desktop toolchain. 
 
 ---
 
