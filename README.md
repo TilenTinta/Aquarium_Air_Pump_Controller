@@ -11,9 +11,11 @@ Simple electronics for controlling aquarium air pump speed with some additional 
 - [Overview](#overview)
 - [Features](#features)
   - [Hardware](#hardware)
-  - [Software ](#software)
+  - [Software](#software)
 - [Mounting](#mounting)
 - [Flashing Firmware](#flashing-firmware)
+- [Working device](#working-device)
+  - [Working Principle](#working-principle)
 - [Debugging](#debugging)
   - [LED Status Codes](#led-status-codes)
 
