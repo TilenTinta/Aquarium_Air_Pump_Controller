@@ -2,7 +2,7 @@
  * File Name          : main.c
  * Author             : Tinta T.
  * Version            : V1.0.0
- * Date               : 2025/02/11
+ * Date               : 2025/10/16
  * Description        : Main file of Aquarium air pump controller
 *****************************************************************/
 
@@ -51,7 +51,10 @@ int main(void)
     ControlPinout_Init();                                   // Init the pinout
     TIM_INT_Init();                                         // Init the timer
     USART1_Init();                                          // Init USART
-    // 1 kHz PWM: prescaler = 48-1 = 47 >> timer clock = 1 MHz, ARR = 1000-1 = 999 = period = 1000 counts = 1 kHz
+   
+    // 1 kHz PWM: 
+    //  - prescaler = 48-1 = 47 >> timer clock = 1 MHz, 
+    //  - ARR = 1000-1 = 999 = period = 1000 counts = 1 kHz
     PWM1_Init(999, 47, 0);                                  // 0% duty (pulse = 0)
     // e.g.: PWM1_SetDuty(250);                             // 25% duty
 
@@ -59,6 +62,7 @@ int main(void)
     sDevice.flag_adc_read = 0;                              // Turn off ADC read
     sDevice.state = devBoot;                                // Set state of main state machine
     sDevice.analog_state = ADCread;                         // Set state of analog state machine
+    sDevice.flag_analog_state = 0;                          // Flag used in IRQ to change mode of analog operation
 
     while(1)
     {
@@ -72,6 +76,7 @@ int main(void)
             if (sDevice.bootDone == 1) 
             {
                 sDevice.state = running;     // End of Boot sequence
+                sDevice.analog_state = ADCread;
                 break;
             }
 
@@ -101,7 +106,7 @@ int main(void)
 
                     // Calculate raw values to messurements and set outputs
                     // --- Input voltage ---
-                    sAnalog.voltage = (uint16_t)(sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
+                    sAnalog.voltage = (uint16_t)((float)sAnalog.analogVoltage / (float)(1024 - 1) * BASE_VOLTAGE);
 
                     // Undervoltage -> error
                     if (sAnalog.voltage < UNDER_VOLT)
@@ -125,11 +130,11 @@ int main(void)
                     uint16_t percentSum = 0;
                     
                     // Shift values
-                    for (int i = 0; i < 9; i++)
+                    for (int i = sizeof(sAnalog.potPercent) - 1; i > 0; i--)
                     {
-                        sAnalog.potPercent[i] = sAnalog.potPercent[i + 1];
+                        sAnalog.potPercent[i] = sAnalog.potPercent[i-1];
                     }
-                    sAnalog.potPercent[0] = (uint8_t)round(sAnalog.analogPotenciometer * 100) / 1024;
+                    sAnalog.potPercent[0] = (uint8_t)((sAnalog.analogPotenciometer * 100) / 1024);
 
                     // Average values
                     for (int i = 0; i < 10; i++)
@@ -176,7 +181,7 @@ int main(void)
 
                     // Calculate raw values to messurements and set outputs
                     // --- Input voltage ---
-                    sAnalog.voltage = (uint16_t)(sAnalog.analogVoltage / (1024 - 1)) * BASE_VOLTAGE;
+                    sAnalog.voltage = (uint16_t)((float)sAnalog.analogVoltage / (float)(1024 - 1) * BASE_VOLTAGE);
 
                     // Undervoltage -> error
                     if (sAnalog.voltage < UNDER_VOLT)
@@ -200,11 +205,11 @@ int main(void)
                     uint16_t percentSum = 0;
                     
                     // Shift values
-                    for (int i = 0; i < 9; i++)
+                    for (int i = sizeof(sAnalog.potPercent) - 1; i > 0; i--)
                     {
-                        sAnalog.potPercent[i] = sAnalog.potPercent[i + 1];
+                        sAnalog.potPercent[i] = sAnalog.potPercent[i-1];
                     }
-                    sAnalog.potPercent[0] = (uint8_t)round(sAnalog.analogPotenciometer * 100) / 1024;
+                    sAnalog.potPercent[0] = (uint8_t)((sAnalog.analogPotenciometer * 100) / 1024);
 
                     // Average values
                     for (int i = 0; i < 10; i++)
@@ -226,6 +231,7 @@ int main(void)
         // State: Error state
         case error:
                 // Do nothing
+                GPIO_WriteBit(GPIOC, LED_RED, Bit_SET);   // Turn ON led at error
             break;
         }
     }
@@ -283,7 +289,7 @@ void ControlPinout_Init(void)
     DMA_DeInit(DMA1_Channel1);                                      // ADC1
     DMA_InitStruct.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->RDATAR;
     DMA_InitStruct.DMA_MemoryBaseAddr     = (uint32_t)sAnalog.adcResults;
-    DMA_InitStruct.DMA_DIR                = DMA_DIR_PeripheralSRC;  // peripheral ★ memory
+    DMA_InitStruct.DMA_DIR                = DMA_DIR_PeripheralSRC;  // peripheral to memory
     DMA_InitStruct.DMA_BufferSize         = 3;
     DMA_InitStruct.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
     DMA_InitStruct.DMA_MemoryInc          = DMA_MemoryInc_Enable;
@@ -296,7 +302,7 @@ void ControlPinout_Init(void)
 
     DMA_Cmd(DMA1_Channel1, ENABLE);
 
-    // 6. Enable ADC DMA
+    // Enable ADC DMA
     ADC_DMACmd(ADC1, ENABLE);
 
     // Enable ADC
@@ -520,7 +526,7 @@ void USART1_IRQHandler(void)
 {
     if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
     {
-        // TODO: PWM value over UART
+        // TODO: PWM value over UART and other commands
 
         // Clear RX flag (otherwise constantly triggered IRQ)
         USART_ClearITPendingBit(USART1, USART_IT_RXNE); 
@@ -546,12 +552,10 @@ void TIM2_IRQHandler(void)
         // Analog read channel switch //
         if (sDevice.state == devBoot || sDevice.state == running)
         {
-            sDevice.analog_state++;                                 // Change state/channel of ADC
-            sDevice.flag_adc_read = 1;                              // Trigger ADC reading
-
-            if (sDevice.analog_state > 1)                           // Reset state/channel of ADC  
+            if (sDevice.flag_analog_state == 1)                     // Reset state/channel of ADC  
             {
-                sDevice.analog_state = 0;
+                sDevice.flag_analog_state = 0;
+                sDevice.analog_state = compute;                     // Change state/channel of ADC
 
                 if (sDevice.state == devBoot)                       // Count cycles at boot
                 {
@@ -559,15 +563,21 @@ void TIM2_IRQHandler(void)
                     if (cntBoot > 9) sDevice.bootDone = 1;          // End boot process
                 } 
             } 
+            else
+            {
+                sDevice.analog_state = ADCread;                     // Change state/channel of ADC
+                sDevice.flag_analog_state = 1;
+            }
+            sDevice.flag_adc_read = 1;                              // Trigger ADC reading and computing
         }
 
         // Boot led //
-        if (sDevice.bootDone != 1)
+        if (sDevice.bootDone == 0)
         {
             cntBlink++;                                             // Timer counters
 
             // Blink LED (twice per second)
-            if (cntBlink >= 12)
+            if (cntBlink >= 6)
             {
                 GPIO_WriteBit(GPIOC, LED_RED, (BitAction)!GPIO_ReadOutputDataBit(GPIOC, LED_RED));
                 cntBlink = 0;
@@ -575,10 +585,10 @@ void TIM2_IRQHandler(void)
         }
         else
         {
-            GPIO_WriteBit(GPIOC, LED_RED, Bit_RESET);   // Turn OFF led after boot
+            GPIO_WriteBit(GPIOC, LED_RED, Bit_RESET);               // Turn OFF led after boot
         }
 
-        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);   // Clear flag            
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);                 // Clear flag            
     }
 }
 
@@ -593,39 +603,56 @@ void TIM2_IRQHandler(void)
  */
 int16_t calculate_ntc_temperature(S_ANALOG *values) {
     
-    if (values->analogTemperature == 0) values->analogTemperature = 1; // Avoid division by zero
-    if (values->analogTemperature >= values->analogVoltage) return -100; // Invalid reading
+    uint16_t adc_value = values->analogTemperature;
     
-    // NTC resistance: R_ntc = R * (1023/ADC - 1)
-    uint32_t r_ntc = (uint32_t)TEMP_R * (values->analogVoltage - values->analogTemperature) / values->analogTemperature;
+    if (adc_value == 0 || adc_value >= 1023) return -100;
     
-    // Avoid extreme values
-    if (r_ntc < 100 || r_ntc > 1000000) return -100;
+    // R_ntc = R2 * (ADC_max - ADC_value) / ADC_value
+    uint32_t r_ntc = (uint32_t)10000 * (1023 - adc_value) / adc_value;
     
-    // ln(R_ntc/R0) with integer approximation
-    int32_t ratio = ((int32_t)r_ntc - TEMP_R0) * 1000L / TEMP_R0;
+    // Lookup table
+    const struct {
+        int16_t temp;           // Temperature column
+        uint16_t resistance;    // Resistance column
+    } ntc_table[] = {
+        { -10, 56800 },
+        {   0, 33180 },
+        {  10, 20070 },
+        {  15, 15790 },
+        {  20, 15000 },
+        {  25, 10000 },  // Reference
+        {  30,  8040 },
+        {  35,  6510 },
+        {  40,  5300 },
+        {  45,  4340 },
+        {  50,  3580 },
+        {  55,  2960 },
+        {  60,  2470 },
+        {  65,  2070 },
+        {  70,  1740 },
+        {  75,  1470 },
+        {  80,  1250 },
+        {  85,  1060 },
+        {  90,   910 },
+        {  95,   780 },
+        {  100,  670 },
+        {  110,  510 },
+    };
     
-    // ln approximation: ln(1+x) 「 x for small x
-    // For better accuracy over wider range, use: ln(x) 「 2*(x-1)/(x+1) when x 「 1
-    int32_t ln_val;
-    if (ratio > -500 && ratio < 500) {
-        ln_val = ratio; // Simple approximation
-    } else {
-        // Better approximation: ln(x) 「 2*(x-1)/(x+1) 
-        int32_t x_num = (int32_t)r_ntc * 1000L / TEMP_R0;
-        ln_val = (2000 * (x_num - 1000)) / (x_num + 1000);
+    // Find where our resistance fits
+    for (int i = 0; i < sizeof(ntc_table)/sizeof(ntc_table[0]) - 1; i++) {
+        if (r_ntc <= ntc_table[i].resistance && r_ntc >= ntc_table[i+1].resistance) {
+            // Linear interpolation
+            uint16_t r1 = ntc_table[i].resistance;
+            uint16_t r2 = ntc_table[i+1].resistance;
+            int16_t t1 = ntc_table[i].temp;
+            int16_t t2 = ntc_table[i+1].temp;
+            
+            return t1 + ((int32_t)(r1 - r_ntc) * (t2 - t1)) / (r1 - r2);
+        }
     }
     
-    // Temperature in decikelvin: 1/T = 1/T0 + (1/B)*ln(R/R0)
-    int32_t inv_temp = (100000000L / TEMP_T_0) + (100000000L / TEMP_BETA) * ln_val / 1000;
-    
-    if (inv_temp == 0) return -100; 
-    
-    // Convert to Celsius: T = 1/inv_temp - 273.15
-    int32_t temp_k = 100000000L / inv_temp; 
-    int16_t temp_c = (temp_k - 27315) / 100;
-    
-    return temp_c;
+    return -100; // Out of range
 }
 
 

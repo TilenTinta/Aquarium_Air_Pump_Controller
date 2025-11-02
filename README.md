@@ -2,7 +2,7 @@
 
 Simple electronics for controlling aquarium air pump speed with some additional functions built around the WCH **CH32V003F4U6** MCU
 
-![Pump control](https://github.com/TilenTinta/Aquarium_Air_Pump_Controller/blob/main/Images/PCB_3D.png)  
+![Pump control pcb](https://github.com/TilenTinta/Aquarium_Air_Pump_Controller/blob/main/Images/PCB_3D.jpg)  
 
 ---
 
@@ -46,9 +46,9 @@ This controller is a very compact solution for controling aquarium air pump spee
 
 ## Mounting
 
-To mount controler on air pump you need to first remove silicon housing from the pump. Desolder both wires and bleed resistor from the motor contacts and cleen them. Then solcer the wires from USB cable to PCB. Correctly oriented pcb can be then soldered directly on motor contacts.
+To mount controler on air pump you need to first remove silicon housing from the pump. Desolder both wires and bleed resistor from the motor contacts and clean them. Then solder the wires from USB cable to PCB. Correctly oriented pcb can be then soldered directly on motor contacts.
 
-[Image when assembled - Comming soon...]
+![Pump control full](https://github.com/TilenTinta/Aquarium_Air_Pump_Controller/blob/main/Images/Mount-step_4.jpg)  
 
 ---
 
@@ -58,6 +58,23 @@ To mount controler on air pump you need to first remove silicon housing from the
 
 > The board also includes a **custom bootloader** for **UART firmware updates** when supported by the desktop toolchain. 
 
+---
+
+## Working device
+
+When USB cable is pluging the controler goes thrue start up routine. After that if everything is okay (input voltage, temperatue) it goes in running mode, otherwise it falls in error state which is indicated with **solid red light**.
+
+### Working Principle
+
+- **Sampling:** The system samples data at 50Hz*. In the first sample, the MCU collects raw measurements. In the next sample, these values are converted into real-world units (V, °C, %). This results in an effective sampling rate of 25Hz for the calculated values.
+- **Control Logic:** Based on the collected values, the controller can either trigger an error or set a new duty cycle for the motor based on the potentiometer reading.
+- **Error Conditions:**
+    - **Over-temperature:** > 80°C
+    - **Under-voltage:** < 3.5V
+- **Duty Cycle:** The duty cycle can be set between 10% and 90%. Values below 10% are treated as 0%, and values above 90% are treated as 100%.
+    - **Note:** The DC motors require a minimum of 3.0V - 3.5V to start.
+
+![Pump control PWM](https://github.com/TilenTinta/Aquarium_Air_Pump_Controller/blob/main/Images/Aquarium_pump_controler_PWM-1kHz.png) 
 ---
 
 ## Debugging

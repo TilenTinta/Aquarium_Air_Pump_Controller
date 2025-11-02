@@ -23,8 +23,8 @@
 #define SW_DATE        "October 2025"   // Date of software
 
 #define OVER_TEMP           80          // Over temperature protection
-#define BASE_VOLTAGE        5           // Expected voltage on the input
-#define UNDER_VOLT          35          // Under voltage protection (3.5V)
+#define BASE_VOLTAGE        500         // Expected voltage on the input
+#define UNDER_VOLT          350         // Under voltage protection (3.5V)
 #define MIN_DUTY            10          // Minimum value of duty cycle (lower is 0)
 #define MAX_DUTY            90          // Maximum value of duty cycle (higher is 100)
 #define V_IN_R1             10000       // Voltage divider (input voltage) R1 
@@ -54,6 +54,7 @@ typedef struct {
     uint8_t     bootDone;               // Flag: signal end of device initialization
     uint8_t     state;                  // Main state machine variable   
     uint8_t     analog_state;           // Analog read state machine variable  
+    uint8_t     flag_analog_state;      // Flag used in IRQ for state monitoring
     uint8_t     flag_adc_read;          // Flag: read ADC value from current channel
     uint8_t     flag_overtemp;          // Flag: overtemperature protection
     uint8_t     flag_undervoltage;      // Flag: undervoltage protection
