@@ -3095,6 +3095,12 @@
 		(uuid "8d59a73b-8889-4907-a012-6b4427c90c1b")
 	)
 	(junction
+		(at 71.12 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8eddc8f9-1164-431e-b1a9-7e0eaee98382")
+	)
+	(junction
 		(at 80.01 41.91)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3176,6 +3182,10 @@
 		(at 213.36 39.37)
 		(uuid "f71c5333-7886-4b43-a6dd-b1768f70bac9")
 	)
+	(no_connect
+		(at 68.58 104.14)
+		(uuid "f91b7cb6-a474-42a7-b05f-6fd70d5c0d55")
+	)
 	(wire
 		(pts
 			(xy 76.2 41.91) (xy 80.01 41.91)
@@ -3195,6 +3205,16 @@
 			(type default)
 		)
 		(uuid "092729f2-0fc4-4e97-a6cf-b6464c01f2e2")
+	)
+	(wire
+		(pts
+			(xy 71.12 106.68) (xy 68.58 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0a5540c4-183c-46f7-b06c-6c983a73de73")
 	)
 	(wire
 		(pts
@@ -3379,6 +3399,16 @@
 	)
 	(wire
 		(pts
+			(xy 68.58 114.3) (xy 68.58 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "33c4db3c-a86e-491d-b432-70a2862e04f8")
+	)
+	(wire
+		(pts
 			(xy 63.5 45.72) (xy 63.5 41.91)
 		)
 		(stroke
@@ -3386,6 +3416,16 @@
 			(type default)
 		)
 		(uuid "3439d455-a5fb-4066-8439-3afdd4b8cc37")
+	)
+	(wire
+		(pts
+			(xy 68.58 106.68) (xy 68.58 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "368bd51c-4497-4817-a451-37a3c902cbf1")
 	)
 	(wire
 		(pts
@@ -3814,6 +3854,16 @@
 	)
 	(wire
 		(pts
+			(xy 71.12 101.6) (xy 71.12 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a197133d-aece-4cf2-9d94-a1223cc3a421")
+	)
+	(wire
+		(pts
 			(xy 106.68 106.68) (xy 106.68 107.95)
 		)
 		(stroke
@@ -3824,7 +3874,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 104.14) (xy 68.58 97.79)
+			(xy 68.58 99.06) (xy 68.58 97.79)
 		)
 		(stroke
 			(width 0)
@@ -3894,6 +3944,16 @@
 	)
 	(wire
 		(pts
+			(xy 71.12 106.68) (xy 78.74 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b5d73bd9-e942-4a31-ab5c-4ba6feed76b7")
+	)
+	(wire
+		(pts
 			(xy 163.83 68.58) (xy 166.37 68.58)
 		)
 		(stroke
@@ -3901,16 +3961,6 @@
 			(type default)
 		)
 		(uuid "b7c6e9af-9a75-44b0-809f-810067de48e6")
-	)
-	(wire
-		(pts
-			(xy 71.12 106.68) (xy 78.74 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bc3e05dc-3d2e-4429-8f83-86edaab63b70")
 	)
 	(wire
 		(pts
@@ -3931,16 +3981,6 @@
 			(type default)
 		)
 		(uuid "cc079815-4d6e-444f-9af9-a917fd26362d")
-	)
-	(wire
-		(pts
-			(xy 68.58 109.22) (xy 68.58 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cdc047e9-1d1c-407f-84e7-3ece87e3e554")
 	)
 	(polyline
 		(pts
@@ -5007,7 +5047,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Potentiometer_Small")
-		(at 68.58 106.68 0)
+		(at 68.58 101.6 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5015,7 +5055,7 @@
 		(dnp no)
 		(uuid "68114892-2879-4981-b9f6-c77c64323c4f")
 		(property "Reference" "RV1"
-			(at 66.802 105.918 0)
+			(at 66.802 100.838 0)
 			(effects
 				(font
 					(size 1 1)
@@ -5023,8 +5063,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "20k"
-			(at 66.548 107.696 0)
+		(property "Value" "50k"
+			(at 66.802 102.616 0)
 			(effects
 				(font
 					(size 1 1)
@@ -5033,7 +5073,7 @@
 			)
 		)
 		(property "Footprint" "Potentiometer_SMD:Potentiometer_Bourns_TC33X_Vertical"
-			(at 68.58 106.68 0)
+			(at 68.58 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5042,7 +5082,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 68.58 106.68 0)
+			(at 68.58 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5051,7 +5091,7 @@
 			)
 		)
 		(property "Description" "Potentiometer"
-			(at 68.58 106.68 0)
+			(at 68.58 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7053,6 +7093,75 @@
 			(project "Air_pump_controler"
 				(path "/3c68f82e-901f-404a-869f-4b45aa33f8e4"
 					(reference "#PWR023")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 68.58 111.76 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e7c19f84-13d0-4eed-9fe5-37cbc1e73be2")
+		(property "Reference" "R10"
+			(at 72.898 110.998 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2k"
+			(at 71.882 112.522 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 68.58 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 68.58 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 68.58 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b6ef678c-5673-4970-b2ec-a2e20980a4ef")
+		)
+		(pin "2"
+			(uuid "a7ea253b-e3d7-4fdc-b247-c27d9ecdab4c")
+		)
+		(instances
+			(project "Air_pump_controler"
+				(path "/3c68f82e-901f-404a-869f-4b45aa33f8e4"
+					(reference "R10")
 					(unit 1)
 				)
 			)

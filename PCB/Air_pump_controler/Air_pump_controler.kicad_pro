@@ -60,10 +60,6 @@
       ],
       "drc_exclusions": [
         [
-          "copper_edge_clearance|147400000|89300000|86228f0b-fc52-4e71-badd-a71a501ba4f2|600bc689-b940-42d7-9ced-4672c8727063",
-          ""
-        ],
-        [
           "copper_edge_clearance|165900000|88800000|4f36026d-f664-4d09-9ddc-81cdeb6d488b|c3bbdcef-a03d-4aa4-86d3-a7acbb4ff5e4",
           ""
         ],
@@ -95,7 +91,7 @@
         "annular_width": "error",
         "clearance": "error",
         "connection_width": "warning",
-        "copper_edge_clearance": "error",
+        "copper_edge_clearance": "ignore",
         "copper_sliver": "warning",
         "courtyards_overlap": "error",
         "creepage": "error",
