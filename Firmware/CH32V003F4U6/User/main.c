@@ -33,6 +33,7 @@ void PWM1_Init(uint16_t arr, uint16_t psc, uint16_t pulse);
 void PWM1_SetDuty(uint16_t pulse);
 int16_t calculate_ntc_temperature(S_ANALOG *values);
 uint16_t duty_to_timVal(uint8_t duty);
+int8_t calculate_duty(S_ANALOG *values);
 
 
 /*###########################################################################################################################################################*/
@@ -134,7 +135,9 @@ int main(void)
                     {
                         sAnalog.potPercent[i] = sAnalog.potPercent[i-1];
                     }
-                    sAnalog.potPercent[0] = (uint8_t)((sAnalog.analogPotenciometer * 100) / 1024);
+
+                    // sAnalog.potPercent[0] = (uint8_t)((sAnalog.analogPotenciometer * 100) / 1024);       // PCB Rev.: 0.1
+                    sAnalog.potPercent[0] = calculate_duty(&sAnalog);                                       // PCB Rev.: 0.2
 
                     // Average values
                     for (int i = 0; i < 10; i++)
@@ -655,5 +658,20 @@ int16_t calculate_ntc_temperature(S_ANALOG *values) {
     return -100; // Out of range
 }
 
+
+/*********************************************************************
+ * @fn      calculate_duty
+ *
+ * @brief   Calculation of a duty cycle percent biased by input voltage 
+ *
+ * @return  percent for duty cycle
+ */
+int8_t calculate_duty(S_ANALOG *values) {
+
+    uint8_t percentRaw = (uint8_t)((values->analogPotenciometer * 100) / 1023);       // Calculate percent from V_pot if V_ref is 5V
+    uint8_t delta = 0; //percentRaw - ((percentRaw * values->voltage) / DUTY_VREF);        // Calculate percent with V_in bias - makes no sence (ADC uses the same ref voltage)
+
+    return percentRaw + delta;
+}
 
 

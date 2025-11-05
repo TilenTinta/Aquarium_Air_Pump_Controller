@@ -29,7 +29,10 @@
 #define MAX_DUTY            90          // Maximum value of duty cycle (higher is 100)
 #define V_IN_R1             10000       // Voltage divider (input voltage) R1 
 #define V_IN_R2             100000      // Voltage divider (input voltage) R2 
-#define DUTY_POT            20000       // Potenciometer (duty cycle)
+#define DUTY_VREF           5           // Duty cycle ideal reference voltage
+//#define DUTY_POT          20000       // Potenciometer (duty cycle), PCB Rev.: 0.1
+#define DUTY_POT            50000       // Potenciometer (duty cycle), PCB Rev.: 0.2
+#define DUTY_R              2000        // Resistor R2 (duty cycle), PCB Rev.: 0.2
 #define TEMP_BETA           39500       // Voltage divider (temperature) NTC Beta value
 #define TEMP_R0             10000       // R_0 value of NTC
 #define TEMP_R              10000       // Voltage divider (temperature) R2 
