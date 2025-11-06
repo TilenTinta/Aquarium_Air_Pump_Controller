@@ -3276,7 +3276,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 110.49) (xy 78.74 115.57)
+			(xy 78.74 111.76) (xy 78.74 115.57)
 		)
 		(stroke
 			(width 0)
@@ -3407,7 +3407,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 114.3) (xy 68.58 115.57)
+			(xy 68.58 111.76) (xy 68.58 115.57)
 		)
 		(stroke
 			(width 0)
@@ -3761,7 +3761,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 104.14) (xy 68.58 109.22)
+			(xy 68.58 104.14) (xy 68.58 106.68)
 		)
 		(stroke
 			(width 0)
@@ -4043,7 +4043,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 105.41) (xy 78.74 101.6)
+			(xy 78.74 106.68) (xy 78.74 101.6)
 		)
 		(stroke
 			(width 0)
@@ -5547,7 +5547,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 78.74 107.95 0)
+		(at 78.74 109.22 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5556,7 +5556,7 @@
 		(dnp no)
 		(uuid "861e5272-2793-4f61-be30-fb18cdce7f62")
 		(property "Reference" "C9"
-			(at 83.566 107.188 0)
+			(at 83.566 108.458 0)
 			(effects
 				(font
 					(size 1 1)
@@ -5565,7 +5565,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 86.36 108.712 0)
+			(at 86.36 109.982 0)
 			(effects
 				(font
 					(size 1 1)
@@ -5574,7 +5574,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 78.74 107.95 0)
+			(at 78.74 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5583,7 +5583,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 78.74 107.95 0)
+			(at 78.74 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5592,7 +5592,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 78.74 107.95 0)
+			(at 78.74 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7455,7 +7455,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 68.58 111.76 180)
+		(at 68.58 109.22 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7463,7 +7463,7 @@
 		(dnp no)
 		(uuid "e7c19f84-13d0-4eed-9fe5-37cbc1e73be2")
 		(property "Reference" "R10"
-			(at 72.898 110.998 0)
+			(at 72.898 108.458 0)
 			(effects
 				(font
 					(size 1 1)
@@ -7472,7 +7472,7 @@
 			)
 		)
 		(property "Value" "20k"
-			(at 72.644 112.522 0)
+			(at 72.644 109.982 0)
 			(effects
 				(font
 					(size 1 1)
@@ -7481,7 +7481,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 68.58 111.76 0)
+			(at 68.58 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7490,7 +7490,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 68.58 111.76 0)
+			(at 68.58 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7499,7 +7499,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 68.58 111.76 0)
+			(at 68.58 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
