@@ -662,14 +662,14 @@ int16_t calculate_ntc_temperature(S_ANALOG *values) {
 /*********************************************************************
  * @fn      calculate_duty
  *
- * @brief   Calculation of a duty cycle percent biased by input voltage 
+ * @brief   Calculation of a duty cycle percent biased to 5V
  *
  * @return  percent for duty cycle
  */
 int8_t calculate_duty(S_ANALOG *values) {
 
-    uint8_t percentRaw = (uint8_t)((values->analogPotenciometer * 100) / 1023);       // Calculate percent from V_pot if V_ref is 5V
-    uint8_t delta = 0; //percentRaw - ((percentRaw * values->voltage) / DUTY_VREF);        // Calculate percent with V_in bias - makes no sence (ADC uses the same ref voltage)
+    uint8_t percentRaw = (uint8_t)((values->analogPotenciometer * 100) / 1023);                     // Calculate percent from V_pot when ADC V_ref is V_in
+    uint8_t delta = (uint8_t)(((DUTY_VREF * percentRaw) / (values->voltage / 100))) - percentRaw;   // Calculate percent with 5V bias 
 
     return percentRaw + delta;
 }

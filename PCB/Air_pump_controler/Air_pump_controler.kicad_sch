@@ -7116,8 +7116,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2k"
-			(at 71.882 112.522 0)
+		(property "Value" "1k8"
+			(at 72.644 112.522 0)
 			(effects
 				(font
 					(size 1 1)
